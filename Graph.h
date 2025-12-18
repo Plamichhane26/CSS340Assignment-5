@@ -25,8 +25,8 @@ public:
         if (u < 0 || u >= V || v < 0 || v >= V) return;
         if (u == v) return;
 
-        adjList[u].add({v, weight});
-        if (!directed) adjList[v].add({u, weight});
+        adjList[u].append({v, weight});
+        if (!directed) adjList[v].append({u, weight});
     }                   
 
     // Get number of nodes
@@ -71,7 +71,7 @@ public:
     // Add DFSRecursive prototype
     
         visited[v] = true;
-        cout << events[v].getName() << " ";
+        cout << events[v] << endl;
 
         auto neighbors = adjList[v].toVector();
         for (const auto& n : neighbors) {

@@ -5,8 +5,8 @@
 #include <vector>
 #include <string>
 #include <utility>
-#include <list>
 #include "Event.h"
+#include "LinkedBagDS/LinkedBag.h"
 
 using namespace std;
 
@@ -34,7 +34,7 @@ public:
 private:
     int V; // Number of vertices
     bool directed; 
-    vector<list<pair<int, T>>> adjList; 
+    vector<LinkedBag<pair<int, T>>> adjList; 
 };
 
 // --- IMPLEMENTATIONS ---
@@ -50,9 +50,11 @@ Graph<T>::Graph(int vertices, bool directed)
 template <typename T>
 void Graph<T>::addEdge(int u, int v, T weight) {
     if (u < 0 || u >= V || v < 0 || v >= V) return;
-    adjList[u].push_back({v, weight});
+    if (u == v) return;
+
+    adjList[u].append({v, weight});
     if (!directed) {
-        adjList[v].push_back({u, weight});
+        adjList[v].append({u, weight});
     }
 }
 
@@ -67,8 +69,9 @@ template <typename T>
 void Graph<T>::printGraph() const {
     for (int i = 0; i < V; ++i) {
         cout << "Vertex " << i << ": ";
-        for (const auto& neighbor : adjList[i]) {
-            cout << "(" << neighbor.first << ", " << neighbor.second << ") ";
+        auto neighbors = adjList[i].toVector();
+        for (const auto& n : neighbors) {
+            cout << "(" << n.first << ", " << n.second << ") ";
         }
         cout << endl;
     }
@@ -78,8 +81,7 @@ void Graph<T>::printGraph() const {
 template <typename T>
 vector<pair<int, T>> Graph<T>::getNeighbors(int vertex) const {
     if (vertex < 0 || vertex >= V) return {};
-    vector<pair<int, T>> neighbors(adjList[vertex].begin(), adjList[vertex].end());
-    return neighbors;
+    return adjList[vertex].toVector();
 }
 
 // DFT Traversal
@@ -98,9 +100,10 @@ void Graph<T>::DFTRecursive(int v, vector<bool>& visited, const vector<Event>& e
     // Prints the event info using the Event class overloaded << operator
     cout << events[v] << " | "; 
 
-    for (const auto& neighbor : adjList[v]) {
-        if (!visited[neighbor.first]) {
-            DFTRecursive(neighbor.first, visited, events);
+    auto neighbors = adjList[v].toVector();
+    for (const auto& n : neighbors) {
+        if (!visited[n.first]) {
+            DFTRecursive(n.first, visited, events);
         }
     }
 }
@@ -124,9 +127,10 @@ bool Graph<T>::DFSRecursive(int v, const string& name, vector<bool>& visited, co
     }
 
     // Recur for neighbors
-    for (const auto& neighbor : adjList[v]) {
-        if (!visited[neighbor.first]) {
-            if (DFSRecursive(neighbor.first, name, visited, events)) {
+    auto neighbors = adjList[v].toVector();
+    for (const auto& n : neighbors) {
+        if (!visited[n.first]) {
+            if (DFSRecursive(n.first, name, visited, events)) {
                 return true; 
             }
         }
